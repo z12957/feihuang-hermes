@@ -1,58 +1,52 @@
-# Contributing — 共同維護協議
+# Contributing — shared operations knowledge
 
-本 repo 是兩節點（**taipei** / **dansui**）的共同 skill 資料庫，由 Kevin 所有（account `z12957`）。
-本文件是**公開**的协作协议；內部端點、token、機房資訊**一律不進 repo**（參 `SECURITY.md`）。
+This public repository is the shared Hermes skills tap for a multi-node GPU fleet. Its purpose is to distribute general procedures and skills. The operator currently describes three GPU compute machines and Hermes nodes that include a GPU-less LM Link client; this topology is not a remotely verified inventory.
 
-## 1. 什麼放進 repo
+## What belongs here
 
-| ✅ 放 | ❌ 留本機 |
+| Commit to this repository | Keep in the node-local database |
 |---|---|
-| 通用 playbook / 診斷流程（不綁定任何機房） | 具體 machine ID、SSH alias、LAN/BMC IP |
-| 空白 template（讓各節點自己填） | 已填好的 fleet inventory |
-| 健檢腳本（不含憑證，讀環境變數即可） | 任何 token / 密碼 / DPAPI blob 路徑 |
-| 踩坑紀律（"為什麼"型） | 單次事件日誌（放各節點自己的 session/skill） |
+| Generic maintenance and fault-isolation procedures | Site labels, machine IDs, hostnames, SSH aliases, IPs and BMC URLs |
+| Empty inventory templates and database schema | GPU serials, exact slot maps and host-specific PCI addresses |
+| Read-only scripts that accept runtime host aliases | Model-server endpoints, active model configuration and local service names |
+| Generalized lessons from incidents | Incident records, tenant details, credentials and node-specific measurements |
+| Model routing and health-check guidance | Live load, request counts, GPU utilization and queue state |
 
-判定原則：**把 repo 內容原樣給一個陌生節點，它能直接照做且不洩露我方資產 = 可以放。**
+Before committing, ask whether an unfamiliar reader could use the change to identify, reach, or authenticate to a particular machine or account. If yes, keep it local and generalize the method.
 
-## 2. 結構
+## Structure
 
 ```
 skills/<skill-name>/
-├── SKILL.md          # frontmatter + playbook
-├── references/       # 細節文件（按需載入）
-└── scripts/          # 可執行腳本
-README.md / SECURITY.md / CONTRIBUTING.md
+├── SKILL.md
+├── references/
+└── scripts/
+schemas/                       # shared schema only; no populated inventory
+README.md
+SECURITY.md
+CONTRIBUTING.md
 ```
 
-- 新 skill = 新目錄；frontmatter 必填 `name` / `description`。
-- 一個 skill 一個主題，不做大雜燴。
+Keep one main task per skill. Put detailed procedures in references and link them from the skill.
 
-## 3. 如何貢獻（兩條路）
+## Contributing changes
 
-### 路徑 A — git（推薦）
-```bash
-git clone https://github.com/z12957/feihuang-hermes
-# 改完
-git add -A && git commit -m "skills: <一句話>" && git push
-```
-需要的 token 權限：`Contents: Read+Write`，repository access 綁定本 repo（fine-grained PAT）或 classic `repo` scope。
+1. Add the reusable method to your local copy and make sure it solves the operational problem.
+2. Remove host-specific values, secrets, tenant details, and incident measurements.
+3. Review the diff for credentials, IPs, machine names, and local filesystem paths.
+4. Submit the generalized change through the repository's normal Git workflow.
 
-### 路徑 B — GitHub REST API
-`PUT /repos/z12957/feihuang-hermes/contents/<path>`（更新必帶舊 `sha`；缺 `Accept: application/vnd.github+json` 會 406）。
-完整端點與範例由 Kevin 經 A2A 私傳，**不放公 repo**。
+Never use a token pasted into chat or a command line. Use the node's approved credential store for Git operations. Do not commit a populated local inventory or database.
 
-## 4. 審核紀律
+## Local data
 
-- 兩節點皆可讀；**push 前**：
-  1. secret scan（grep 已知 token 前綴 / IP / 機房字眼）
-  2. 確認第 1 節的進/留分界
-- Kevin 是唯一 final approver；有疑義先問再推。
-- 破壞性操作（刪 skill、改 SECURITY.md）需 Kevin 明確同意。
-
-## 5. 各節點本地落地
+Initialize a local inventory database from `schemas/node-inventory.sql`, for example:
 
 ```bash
-hermes skills tap add z12957/feihuang-hermes
-hermes skills install z12957/feihuang-hermes/<skill-name>   # community source 加 --force
+mkdir -p local
+sqlite3 local/fleet.db < schemas/node-inventory.sql
 ```
-本地 skill 與 repo 版的分工：**repo 版 = 通用流程；本地版 = 通用流程 + 本節點 inventory（private，不 commit）。**
+
+Each node records its own hardware and services. Share only schema or reusable procedures. Do not synchronize populated inventories through GitHub; they contain fleet-specific operational details.
+
+Before any Vast machine reboot, power cycle, BMC reset, or power-off/on, follow the maintenance gate in the skill and verify platform acceptance. A missing GPU is a report-only condition until that gate has been satisfied.
