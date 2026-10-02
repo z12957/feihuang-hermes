@@ -23,7 +23,19 @@ When a task produces a reliable procedure that should benefit other nodes, disti
 
 ## Open a candidate PR
 
-Follow `skills/vast-gpu-fleet-maintenance/references/shared-learning-workflow.md`. It creates an isolated branch and a draft PR from current `main`; it never writes to `main`. Supply a generic contributor label, not a site or machine name. Confirm that Gitleaks passes, then inspect the complete PR diff before handing it to the curator.
+After the operator asks to share the lesson, or confirms the generalized change, use the local publisher:
+
+```bash
+python3 ~/feihuang-hermes/scripts/shared_skills.py publish \
+  --repo ~/feihuang-hermes \
+  --hermes-home ~/.hermes \
+  --skill <skill-name> \
+  --node-slug <generic-node-label>
+```
+
+The publisher creates an isolated branch and a draft PR from current `main`; it never writes to `main`. Use a generic public contributor label such as `node-a`, not a site or machine name. Confirm that Gitleaks passes, then inspect the complete PR diff before handing it to the curator. If the publisher or scanner is unavailable, report that and leave the lesson local.
+
+See `skills/vast-gpu-fleet-maintenance/references/shared-learning-workflow.md` for sync and conflict behavior.
 
 ## Keep node data local
 
