@@ -1,0 +1,14 @@
+# Node-specific fleet facts and records
+/local/
+*.db
+*.db-wal
+*.db-shm
+*.sqlite
+*.sqlite3
+*.sqlite-wal
+*.sqlite-shm
+
+# Local credentials and environment
+.env
+.env.*
+!.env.example
