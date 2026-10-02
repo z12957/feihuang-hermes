@@ -2,17 +2,19 @@
 
 A shared Hermes skills tap for GPU fleet operations. It contains reusable procedures, troubleshooting guidance, and tools. It does not contain node credentials, live telemetry, or a running model gateway.
 
-## Install on a node
+## Install and synchronize
 
-This repository is public, so a GitHub token is not required to read it.
+This repository is public, so fetching approved skills requires no GitHub token. Use a dedicated clone for the Git-based publisher and periodic updater:
 
 ```bash
-hermes skills tap add z12957/feihuang-hermes
-hermes skills install z12957/feihuang-hermes/vast-gpu-fleet-maintenance
-hermes skills list | grep -i vast
+git clone https://github.com/z12957/feihuang-hermes.git ~/feihuang-hermes
+python3 ~/feihuang-hermes/scripts/shared_skills.py sync \
+  --repo ~/feihuang-hermes --hermes-home ~/.hermes
 ```
 
-Use a node's normal Hermes credential store only if that node needs authenticated access to a private repository. Never paste a token into a shell command, chat, script, or repository file.
+The first run installs shared skills in `~/.hermes/skills` and records local baselines under the ignored `local/` directory. On Linux, enable the supplied 15-minute user timer from `deploy/systemd/`; see the shared learning workflow for setup and conflict behavior.
+
+Publishing requires `git`, GitHub CLI (`gh`) authenticated for this repository, and Gitleaks. After reviewing a local skill change, run the publisher to create an isolated branch and draft PR. Nodes never push skill changes to `main` directly.
 
 ## Repository contents
 
@@ -21,18 +23,20 @@ Use a node's normal Hermes credential store only if that node needs authenticate
 | `skills/vast-gpu-fleet-maintenance/SKILL.md` | Main Vast GPU fleet maintenance skill |
 | `skills/vast-gpu-fleet-maintenance/references/maintenance-gate.md` | Tenant notification and verified maintenance sequence before power actions |
 | `skills/vast-gpu-fleet-maintenance/references/gpu-fault-playbook.md` | GPU identity, PCIe, ECC, thermal and Xid diagnosis |
-| `skills/vast-gpu-fleet-maintenance/references/model-serving-playbook.md` | Multi-node local inference checks, LM Link and gateway routing guidance |
-| `skills/vast-gpu-fleet-maintenance/references/fleet-template.md` | Blank local inventory template |
+| `skills/vast-gpu-fleet-maintenance/references/model-serving-playbook.md` | Multi-node inference checks, LM Link and gateway routing guidance |
+| `skills/vast-gpu-fleet-maintenance/references/shared-learning-workflow.md` | Skill proposal, review, conflict and periodic sync process |
+| `skills/shared-skill-contributor/SKILL.md` | Hermes guidance for turning reusable lessons into PR candidates |
+| `scripts/shared_skills.py` | Safe pull/update and Gitleaks-scanned draft PR publisher |
+| `deploy/systemd/` | Optional periodic sync timer for Linux Hermes nodes |
 | `schemas/node-inventory.sql` | SQLite schema for node-local hardware and service inventory |
-| `skills/vast-gpu-fleet-maintenance/scripts/fleet_health_check.sh` | Read-only health check over configured SSH aliases |
 | `SECURITY.md` | Secret handling and public-repository rules |
 | `CONTRIBUTING.md` | Shared contribution and local-data policy |
 
 ## Shared operations and local facts
 
-Keep common SOPs, generic troubleshooting methods, and reusable skills here. Each node keeps its filled hardware inventory, host identifiers, service URLs, incident records, and credentials in its local SQLite database under `local/`. The schema is shared; the populated database is not. The repository ignores that local directory and SQLite database files.
+Keep common SOPs, generic troubleshooting methods, and reusable skills here. Each node keeps its filled hardware inventory, host identifiers, service URLs, incident records, and credentials in its local SQLite database under `local/`. The schema is shared; the populated database is not.
 
-GitHub distributes reviewed knowledge and configuration templates. It is not the live fleet database or load-balancing state store. A model gateway must use a separate, reachable runtime service for current endpoint health and load.
+GitHub distributes reviewed knowledge. It is not the live fleet database or load-balancing state store. A model gateway uses a separate runtime service for current endpoint health and load.
 
 ## Fleet shape
 
