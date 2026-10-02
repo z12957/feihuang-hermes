@@ -23,7 +23,7 @@ When a task produces a reliable procedure that should benefit other nodes, disti
 
 ## Open a candidate PR
 
-Use the shared publisher described in `references/shared-learning-workflow.md`. It creates an isolated branch and a draft PR from current `main`; it never writes to `main`. Supply a generic contributor label, not a site or machine name. Confirm that Gitleaks passes, then inspect the complete PR diff before handing it to the curator.
+Follow `skills/vast-gpu-fleet-maintenance/references/shared-learning-workflow.md`. It creates an isolated branch and a draft PR from current `main`; it never writes to `main`. Supply a generic contributor label, not a site or machine name. Confirm that Gitleaks passes, then inspect the complete PR diff before handing it to the curator.
 
 ## Keep node data local
 
