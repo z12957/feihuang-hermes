@@ -1,32 +1,30 @@
-# Fleet inventory — FILL THIS IN ON YOUR NODE (do NOT commit the filled copy)
+# Fleet inventory — fill in locally; never commit a populated copy
 
-This is the **template**. Keep a *filled* copy locally (e.g. in your local skill dir or your notes).
-Only this empty template is safe to commit. Every `{{...}}` is a value **you** supply at runtime.
+Use `schemas/node-inventory.sql` to create the node-local SQLite database. This page is a checklist for the fields each node owner should verify. Do not add filled values to the shared repository.
 
-## Machines
+## For each machine
 
-| Vast machine ID | Host / board | GPU (count × model) | SSH alias | LAN SSH IP | BMC URL | Power limit |
-|---|---|---|---|---|---|---|
-| `{{machine_id}}` | `{{board_model}}` | `{{N}}× {{gpu_model}}` | `{{ssh_alias}}` | `{{10.x.y.z}}` | `https://{{bmc_ip}}` | `{{150}}W` |
-| `{{machine_id}}` | `{{board_model}}` | `{{N}}× {{gpu_model}}` | `{{ssh_alias}}` | `{{10.x.y.z}}` | `https://{{bmc_ip}}` | `{{200}}W` |
+- Local node ID and display name
+- Role: compute host, Hermes node, or both
+- Operating system and version
+- GPU count and model for compute hosts; record each GPU's index, PCI bus ID, subsystem ID, VBIOS, driver, memory, and physical location
+- SSH alias and LAN address in the local access configuration
+- BMC/Redfish URL and access method in the local credential store; never record a password here
+- Installed services and versions, including Hermes, LM Link, model server, LiteLLM, and monitoring where present
+- Exact model ID, API compatibility, and endpoint URL, held only in the local database/configuration
 
-## Access (your node)
+## Access checks
 
-- SSH key path: `{{~/.ssh/id_ed25519_<fleet>}}` — fingerprint: `{{...}}` (verify before first use)
-- `~/.ssh/config` aliases: `{{alias_a}}`, `{{alias_b}}`, `{{alias_c}}`
-- Vast CLI: `{{/path/to/vastai}}` (wrapper decrypts the API key in memory; never print it)
-- Root-on-remote helper: `{{/path/to/Invoke-HostSudo-style-helper}}` (shared sudo password lives **encrypted**, owner-provided)
+- Verify SSH key fingerprints before first use.
+- Keep private keys in the operating system user's SSH directory.
+- Keep Vast API keys and sudo/BMC credentials in an encrypted OS credential store; do not place secrets in the database.
+- Verify each API endpoint from the client node that will use it.
+- Mark the date each hardware or endpoint fact was last checked.
 
-## Vast account scope (this API key)
+## Vast account scope
 
-List the machine IDs under **your** API key, and which are `listed=True`. Note any machine that is
-**not** under this key (belongs to another account — you'd need that account's key to monitor it).
+List machine IDs and listing state locally. Note if a machine belongs to another account and cannot be inspected with the current credential. Never guess ownership or credentials.
 
-## BMC
+## Open gaps
 
-Per host: BMC base URL, Redfish version, auth method (basic/none). **Passwords: never write them
-here or anywhere in a file** — owner-provided on demand. Do not copy one host's BMC config to another.
-
-## Open gaps (owner to fill; never guess)
-
-- `{{...}}`
+Record unknown hardware, service, and connectivity facts as unknown. Do not infer that a service exists because the architecture expects it.
