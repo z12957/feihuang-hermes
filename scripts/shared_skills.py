@@ -17,7 +17,6 @@ import tempfile
 from datetime import datetime, timezone
 from pathlib import Path
 
-REPO_URL = "https://github.com/z12957/feihuang-hermes.git"
 MANIFEST_REL = Path("local/shared-skill-sync.json")
 SKILL_NAME_RE = re.compile(r"^[a-z0-9][a-z0-9._-]{0,63}$")
 NODE_SLUG_RE = re.compile(r"^[a-z0-9][a-z0-9-]{0,31}$")
@@ -100,24 +99,42 @@ def copy_skill(source: Path, destination: Path) -> None:
         raise WorkflowError(f"Skill source is not a regular directory: {source}")
     if not (source / "SKILL.md").is_file():
         raise WorkflowError(f"Missing SKILL.md: {source}")
-    if destination.exists():
-        shutil.rmtree(destination)
-    destination.mkdir(parents=True)
-    for path in sorted(source.rglob("*")):
-        rel = path.relative_to(source)
-        if any(part in EXCLUDED_DIRS for part in rel.parts):
-            continue
-        if path.is_symlink():
-            raise WorkflowError(f"Symlink found in skill tree; review it manually: {path}")
-        if path.is_dir():
-            continue
-        if path.name in SECRET_FILE_NAMES or path.name.startswith(".env"):
-            continue
-        if path.suffix.lower() in EXCLUDED_SUFFIXES:
-            continue
-        target = destination / rel
-        target.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(path, target)
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    stage = Path(tempfile.mkdtemp(prefix=f".{destination.name}.stage-", dir=destination.parent))
+    stage.rmdir()
+    backup = destination.with_name(f".{destination.name}.backup")
+    try:
+        stage.mkdir()
+        for path in sorted(source.rglob("*")):
+            rel = path.relative_to(source)
+            if any(part in EXCLUDED_DIRS for part in rel.parts):
+                continue
+            if path.is_symlink():
+                raise WorkflowError(f"Symlink found in skill tree; review it manually: {path}")
+            if path.is_dir():
+                continue
+            if path.name in SECRET_FILE_NAMES or path.name.startswith(".env"):
+                continue
+            if path.suffix.lower() in EXCLUDED_SUFFIXES:
+                continue
+            target = stage / rel
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(path, target)
+        if backup.exists():
+            shutil.rmtree(backup)
+        if destination.exists():
+            destination.replace(backup)
+        try:
+            stage.replace(destination)
+        except OSError:
+            if backup.exists() and not destination.exists():
+                backup.replace(destination)
+            raise
+        if backup.exists():
+            shutil.rmtree(backup)
+    finally:
+        if stage.exists():
+            shutil.rmtree(stage)
 
 
 def skill_name_from_file(path: Path) -> str | None:
