@@ -11,19 +11,25 @@ metadata:
 
 # Shared skill contributor
 
-When a task produces a reliable procedure that should benefit other nodes, distill the reusable method into the relevant local skill. Do not copy chat transcripts, logs, credentials, host details, exact endpoints, tenant data, or live hardware measurements.
+Hermes skills are procedural memory. Turn successful, reusable operating lessons into shared candidates so other nodes can benefit.
 
-## Before publishing
+## When to publish automatically
 
-1. Read the relevant skill and shared reference files first.
-2. Keep the rule actionable: state what to do and why, and include a verification step.
-3. Compare the local skill with the current shared repository version. Avoid duplicating existing guidance.
-4. Review every changed file for site identifiers, hostnames, IPs, PCI addresses, tokens, passwords, environment files, and local paths.
-5. Ask the operator to review the candidate when facts are uncertain or the change affects maintenance or recovery behavior.
+After `skill_manage` creates or changes a local skill, prepare a draft PR when at least one is true:
 
-## Open a candidate PR
+- The solution is not already documented and is likely to recur.
+- A failed approach exposed a reliable pitfall or diagnostic signal.
+- The operator corrected or clarified the procedure.
+- The change materially improves the time or reliability of a recurring workflow.
 
-After the operator asks to share the lesson, or confirms the generalized change, use the local publisher:
+Do not publish transient machine state, one-off incident logs, speculative fixes, or content that identifies a site, machine, account, tenant, endpoint, or credential. If a fact cannot be safely generalized or verified, keep it local and explain the gap.
+
+## Prepare the candidate
+
+1. Read the changed skill and relevant shared references; compare the full diff with current `main`.
+2. Distill the lesson into an imperative rule and its reason. Remove transcripts, logs, host details, exact model endpoints, PCI addresses, tenant data, live measurements, credentials, and machine-specific paths.
+3. If the lesson passes those checks, run the publisher without waiting for a separate user prompt. It creates a draft PR; a curator still reviews and merges it.
+4. If the publisher or scanner is unavailable, leave the lesson local and report why.
 
 ```bash
 python3 ~/feihuang-hermes/scripts/shared_skills.py publish \
@@ -33,7 +39,7 @@ python3 ~/feihuang-hermes/scripts/shared_skills.py publish \
   --node-slug <generic-node-label>
 ```
 
-The publisher creates an isolated branch and a draft PR from current `main`; it never writes to `main`. Use a generic public contributor label such as `node-a`, not a site or machine name. Confirm that Gitleaks passes, then inspect the complete PR diff before handing it to the curator. If the publisher or scanner is unavailable, report that and leave the lesson local.
+Use a generic public contributor label such as `node-a`, never a site or machine name. The publisher uses a temporary worktree on current `main`, scans staged changes with Gitleaks, and opens a PR branch. It never writes to `main`. Inspect the complete PR diff after creation.
 
 See `skills/vast-gpu-fleet-maintenance/references/shared-learning-workflow.md` for sync and conflict behavior.
 
