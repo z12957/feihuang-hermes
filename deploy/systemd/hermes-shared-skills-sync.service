@@ -1,0 +1,8 @@
+[Unit]
+Description=Update shared Hermes skills from the approved GitHub main branch
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/python3 %h/feihuang-hermes/scripts/shared_skills.py sync --repo %h/feihuang-hermes --hermes-home %h/.hermes
