@@ -1,15 +1,15 @@
 # Shared skill learning loop
 
-Hermes skills are procedural memory. A node can improve a local skill after a reliable solution, a repeated pitfall, or a user correction. GitHub is the reviewed, versioned distribution point for knowledge that all nodes should share.
+Hermes skills are procedural memory. After a reliable solution, repeated pitfall, or user correction changes a local skill, a node can turn the general method into a shared candidate. GitHub is the reviewed, versioned distribution point for knowledge that all nodes should share.
 
 ## Roles
 
-- **Node Hermes:** uses the installed skill and captures a reusable lesson locally.
-- **Publisher:** compares the local skill with the shared version, scans it, and opens a draft PR on a node-specific branch.
-- **Curator:** reviews for correctness, duplicate guidance, conflicts, and private fleet details; merges approved changes to `main`.
+- **Node Hermes:** uses skills and distills reusable lessons. If a change is safe and verified, it automatically asks the local publisher to open a draft PR.
+- **Publisher:** compares the local skill with the shared version, scans it, and opens a draft PR on a generic contributor branch.
+- **Curator:** reviews correctness, duplicate guidance, conflicts, and private fleet details; merges approved changes to `main`.
 - **Node sync timer:** polls GitHub main and updates an installed skill only when it has no local edits. It leaves local edits alone and reports conflicts.
 
-The publisher never pushes to `main`. Give each node a generic public contributor label such as `node-a`; do not use the site or machine name in branch names or PR metadata.
+The publisher never pushes to `main`. Use a generic public contributor label such as `node-a`; do not use the site or machine name in branch names or PR metadata.
 
 ## First-time setup on each Hermes node
 
@@ -37,13 +37,13 @@ The supplied unit assumes the clone is at `~/feihuang-hermes` and Hermes home is
 
 ## Publish a learned procedure
 
-After Hermes updates a skill, review the complete local diff and remove private or one-off details. Install `gh` and `gitleaks`, authenticate `gh` with the repo's write access, then run:
+When Hermes changes a skill and the lesson meets the criteria in `skills/shared-skill-contributor/SKILL.md`, the agent should review and generalize the changed files, then run:
 
 ```bash
 python3 ~/feihuang-hermes/scripts/shared_skills.py publish \
   --repo ~/feihuang-hermes \
   --hermes-home ~/.hermes \
-  --skill vast-gpu-fleet-maintenance \
+  --skill <skill-name> \
   --node-slug node-a
 ```
 
